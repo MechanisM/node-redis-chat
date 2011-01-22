@@ -1,0 +1,10 @@
+dump.rdb
+config/config.js
+*.tmp
+*.pid
+tmp/*
+log/*
+.DS_Store
+*.swp
+Thumbs.db
+Desktop.ini
