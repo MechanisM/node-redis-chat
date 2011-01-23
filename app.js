@@ -106,45 +106,46 @@ server.listen(config.server.port, '127.0.0.1', function() {
 });
 
 // socket.io server
-var socket    = io.listen(server),
-    buffer    = [],
-    subclient = redis.createClient(),
-    redclient = redis.createClient();
+var socket     = io.listen(server),
+    subclient  = redis.createClient(),
+    redclient  = redis.createClient();
     
 // redis code
 redclient.on("error", function (err) {
   console.log("-- Redis Error " + err);
 });
 
-// subclient.set("string key", "string val", redis.print);
-// subclient.hset("hash key", "hashtest 1", "some value", redis.print);
-// subclient.hset(["hash key", "hashtest 2", "some other value"], redis.print);
-// subclient.hkeys("hash key", function (err, replies) {
-//   console.log(replies.length + " replies:");
-//   replies.forEach(function (reply, i) {
-//       console.log("    " + i + ": " + reply);
-//   });
-//   subclient.quit();
-// });
+subclient.on("error", function (err) {
+  console.log("-- Pub/Sub Redis Error " + err);
+});
 
 subclient.subscribe('user-list');
 subclient.subscribe('chat-message');
+
 socket.on('connection', function (client) {
   redclient.lrange('chat-buffer', -50, -1, function (err, resp) {
-    var parsed_resp = [];
+    var parsed_resp = [],
+        buffer_row;
     for (var i = 0; i < resp.length; ++i) {
-      parsed_resp.push(JSON.parse(resp[i]));
+      buffer_row = JSON.parse(resp[i]);
+      if (buffer_row['body'] !== undefined) {
+        parsed_resp.push(buffer_row);
+      }
     }
+    console.log(parsed_resp);
     client.send({'buffer': parsed_resp});
   });
   
   subclient.on('message', function (channel, message) {
+    var name;
     message = JSON.parse(message);
     if (channel === 'user-list') {
-      client.send({ 'announcement' : message.session_id + ' ' + message.action });
+      client.send({'announcement' : message.name + ' ' + message.action});
     } else if (channel === 'chat-message') {
       // check to see if the message is from a different user
-      if (message.message[0] !== client.sessionId.toString()) {
+      console.log("Received message:");
+      console.log(message);
+      if (message.session_id !== client.sessionId.toString()) {
         client.send(message);
       }
     } else {
@@ -152,19 +153,23 @@ socket.on('connection', function (client) {
     }
   });
   
-  redclient.publish('user-list', JSON.stringify({'session_id': client.sessionId, 'action': 'connected'}));
-  
   client.on('message', function (message) {
     console.log(message);
-    var msg = { message: [client.sessionId, message] };
+    message = JSON.parse(message);
+    if (!client.name && message.name && !message.body || message.body.length === 0) {
+      client.name = message.name;
+      redclient.publish('user-list', JSON.stringify({'action':     'connected', 
+                                                     'name':       client.name}));
+      return;
+    }
+    var msg = {'name':       message.name, 
+               'body':       message.body, 
+               'session_id': client.sessionId};
     redclient.rpush('chat-buffer', JSON.stringify(msg));
-    // buffer.push(msg);
-    // if (buffer.length > 15) buffer.shift();
     redclient.publish('chat-message', JSON.stringify(msg));
-    // client.broadcast(msg);
   });
   client.on('disconnect', function () {
-    redclient.publish('user-list', JSON.stringify({'session_id': client.sessionId, 'action': 'disconnected'}));
+    redclient.publish('user-list', JSON.stringify({'name': client.name, 'action': 'disconnected'}));
     console.log('disconnected!');
   });
 });
