@@ -90,7 +90,7 @@ var server = http.createServer(function (req, res) {
   if (request_path === '/') {
     // serve the static page
     static_handler('chat.html')(req, res);
-  } else if (request_path.match(/xhr-polling/)) {
+  } else if (request_path.match(/xhr-polling|websocket/)) {
     console.log('polling');
   } else {
     static_handler(request_path)(req, res);
