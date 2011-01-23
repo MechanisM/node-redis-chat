@@ -28,6 +28,7 @@ function static_handler(filename) {
     // sys.puts("loading " + file_path + "...");
     fs.readFile(file_path, function (err, data) {
       if (err) {
+        req.text_response(404, 'File not found');
         sys.puts("Error loading static file " + file_path);
       } else {
         body = data;
