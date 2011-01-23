@@ -69,7 +69,7 @@ var server = http.createServer(function (req, res) {
   
   // for apache proxying from "yourhost.com/node/" to "yourhost.com:8000/"
   var parsed_url     = url.parse(req.url, true)
-    , request_path   = parsed_url.pathname.replace(/\/node/i, '')
+    , request_path   = parsed_url.pathname.replace(/\/chat/i, '')
     , request_params = parsed_url.query;
   
   // taken from node.js chat example
