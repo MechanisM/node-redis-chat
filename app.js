@@ -98,14 +98,15 @@ var server = http.createServer(function (req, res) {
   
 });
 
-server.listen(config.server.port, '127.0.0.1', function() {
+server.listen(config.server.port, 'localhost', function() {
   // write out the PID for god
   fs.writeFile(path.join(__dirname, 'tmp/chat.pid'), process.pid.toString());
   puts('chat server listening on ' + config.server.port);
 });
 
 // socket.io server
-var socket     = io.listen(server),
+var socket     = io.listen(server,
+                           { resource: 'chat/socket.io' }),
     subclient  = redis.createClient(),
     redclient  = redis.createClient();
     
