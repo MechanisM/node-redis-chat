@@ -36,7 +36,7 @@
     <!--[if IE 7]><script>var ie7 = true;</script><![endif]-->
     <script type="text/javascript" charset="utf-8">
       window.WEB_SOCKET_SWF_LOCATION = "/WebSocketMainInsecure.swf"
-      var transports = ie7 ? ['jsonp-polling'] : ['websocket', 'xhr-polling', 'htmlfile', 'jsonp-polling', 'flashsocket'],
+      var transports = typeof ie7 !== 'undefined' ? ['jsonp-polling'] : ['websocket', 'xhr-polling', 'htmlfile', 'jsonp-polling', 'flashsocket'],
           socket     = new io.Socket(null, { 
                                        resource:          'chat/socket.io',
                                        // available ['websocket', 'flashsocket', 'htmlfile', 'xhr-multipart', 'xhr-polling', 'jsonp-polling']

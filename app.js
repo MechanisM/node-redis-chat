@@ -5,17 +5,10 @@ var redis  = require("redis"),
     config = require('./config/config'),
     helper = require('./lib/helper'),
     fs     = require('fs'),
-    sys    = require('sys'),
     path   = require('path');
-    
-// move this to a helper
-// global.puts = sys.puts;
-// global.log = function(obj) {
-//   sys.puts(sys.inspect(obj));
-// };
 
 process.on('uncaughtException', function (err) {
-  puts('Caught exception: ' + err.message + "\nStack: " + err.stack);
+  console.log('Caught exception: ' + err.message + "\nStack: " + err.stack);
 });
 
 function static_handler(filename) {
@@ -25,17 +18,17 @@ function static_handler(filename) {
     , file_path    = path.join(__dirname, 'static', filename);
 
   function loadResponseData(callback) {
-    // sys.puts("loading " + file_path + "...");
+    // console.log("loading " + file_path + "...");
     fs.readFile(file_path, function (err, data) {
       if (err) {
-        sys.puts("Error loading static file " + file_path);
+        console.log("Error loading static file " + file_path);
       } else {
         body = data;
         headers = { "Content-Type": content_type
                   , "Content-Length": body.length
                   };
         headers["Cache-Control"] = "public";
-        // sys.puts("static file " + file_path + " loaded");
+        // console.log("static file " + file_path + " loaded");
         callback();
       }
     });
@@ -100,10 +93,10 @@ var server = http.createServer(function (req, res) {
   
 });
 
-server.listen(config.server.port, '192.168.15.2', function() {
+server.listen(config.server.port, null, function() {
   // write out the PID for god
   fs.writeFile(path.join(__dirname, 'tmp/chat.pid'), process.pid.toString());
-  puts('chat server listening on ' + config.server.port);
+  console.log('chat server listening on ' + config.server.port);
 });
 
 // socket.io server
