@@ -9,10 +9,10 @@ var redis  = require("redis"),
     path   = require('path');
     
 // move this to a helper
-global.puts = sys.puts;
-global.log = function(obj) {
-  sys.puts(sys.inspect(obj));
-};
+// global.puts = sys.puts;
+// global.log = function(obj) {
+//   sys.puts(sys.inspect(obj));
+// };
 
 process.on('uncaughtException', function (err) {
   puts('Caught exception: ' + err.message + "\nStack: " + err.stack);
@@ -92,13 +92,15 @@ var server = http.createServer(function (req, res) {
     static_handler('chat.html')(req, res);
   } else if (request_path.match(/xhr-polling|websocket/)) {
     console.log('polling');
+  } else if (request_path.match(/favicon/)) {
+    res.text_response(404, "Not Found");
   } else {
     static_handler(request_path)(req, res);
   }
   
 });
 
-server.listen(config.server.port, 'localhost', function() {
+server.listen(config.server.port, '192.168.15.2', function() {
   // write out the PID for god
   fs.writeFile(path.join(__dirname, 'tmp/chat.pid'), process.pid.toString());
   puts('chat server listening on ' + config.server.port);
